@@ -3,158 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZoomInfo Dashboard</title>
+    <title>TAM Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+    <!-- PapaParse CSV library -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script>
+        const correctPassword = "flames";
+        function checkPassword() {
+            const enteredPassword = prompt("This dashboard is protected. Please enter the password:");
+            if (enteredPassword === correctPassword) {
+                document.body.style.display = 'block';
+                return true;
+            } else if (enteredPassword !== null) {
+                alert("Incorrect password. Please try again.");
+                checkPassword();
+            } else {
+                document.body.style.display = 'none';
+            }
+        }
+        document.body.style.display = 'none';
+        document.addEventListener('DOMContentLoaded', function() { checkPassword(); });
+    </script>
 </head>
 <body>
-    <!-- Main Dashboard -->
-    <div class="dashboard-container">
-        <div class="dashboard-header">
-            <h1>ZoomInfo Dashboard</h1>
-        </div>
+    <div class="container">
+        <header class="header">
+            <h1>ZoomInfo Account Filter Dashboard</h1>
+            <p class="subtitle">Filter and analyze enriched ZoomInfo account data to identify and qualify prospects</p>
+        </header>
 
         <!-- Tab Navigation -->
-        <div class="tab-navigation">
-            <button id="tab-dashboard" class="tab-btn active" data-tab="dashboard">Account Filter Dashboard</button>
-            <button id="tab-details" class="tab-btn" data-tab="details">Account Details</button>
-        </div>
+        <nav class="tab-navigation">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="dashboard">Dashboard</button>
+                <button class="tab-button" data-tab="account-details">Account Details</button>
+            </div>
+        </nav>
 
-        <!-- Tab Content -->
-        <div id="tab-content-dashboard" class="tab-content active">
-            <!-- Filters Section -->
-            <div id="filters-section" class="filters-container hidden">
+        <!-- Dashboard Tab -->
+        <div id="dashboard-tab" class="tab-content active">
+            <section class="filters-section">
                 <div class="filters-grid">
-                    <!-- Revenue Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">Revenue Range</label>
-                        <select id="revenue-filter" class="form-control" multiple>
-                            <option value="$1M - $10M">$1M - $10M</option>
-                            <option value="$10M - $50M">$10M - $50M</option>
-                            <option value="$50M - $100M">$50M - $100M</option>
-                            <option value="$100M - $500M">$100M - $500M</option>
-                            <option value="$500M - $1B">$500M - $1B</option>
-                            <option value="$1B+">$1B+</option>
-                        </select>
-                    </div>
-
-                    <!-- Employee Count Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">Employee Count</label>
-                        <div class="employee-inputs">
-                            <input type="number" id="employee-min" class="form-control" placeholder="Min" min="0">
-                            <input type="number" id="employee-max" class="form-control" placeholder="Max" min="0">
+                    <div class="card filter-card">
+                        <h3>Revenue Range</h3>
+                        <div class="form-group">
+                            <select id="revenueFilter" class="form-control" multiple size="6">
+                                <option value="Under $500,000">Under $500,000</option>
+                                <option value="$500,000 - $1 mil.">$500,000 - $1 mil.</option>
+                                <option value="$1 mil. - $5 mil.">$1 mil. - $5 mil.</option>
+                                <option value="$5 mil. - $10 mil.">$5 mil. - $10 mil.</option>
+                                <option value="$10 mil. - $25 mil.">$10 mil. - $25 mil.</option>
+                                <option value="$25 mil. - $50 mil.">$25 mil. - $50 mil.</option>
+                                <option value="$50 mil. - $100 mil.">$50 mil. - $100 mil.</option>
+                                <option value="$100 mil. - $250 mil.">$100 mil. - $250 mil.</option>
+                                <option value="$250 mil. - $500 mil.">$250 mil. - $500 mil.</option>
+                                <option value="$500 mil. - $1 bil.">$500 mil. - $1 bil.</option>
+                                <option value="Over $5 bil.">Over $5 bil.</option>
+                            </select>
                         </div>
                     </div>
 
-                    <!-- Segmentation Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">Segmentation</label>
-                        <select id="segmentation-filter" class="form-control" multiple>
-                            <!-- Populated dynamically -->
-                        </select>
+                    <div class="card filter-card">
+                        <h3>Employee Count</h3>
+                        <div class="employee-inputs">
+                            <div class="form-group">
+                                <label class="form-label" for="minEmployees">Min Employees</label>
+                                <input type="number" id="minEmployees" class="form-control" placeholder="0" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="maxEmployees">Max Employees</label>
+                                <input type="number" id="maxEmployees" class="form-control" placeholder="Unlimited" min="0">
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Assigned To Filter -->
-                    <div class="filter-group">
-                        <label class="filter-label">Assigned To</label>
-                        <select id="assigned-filter" class="form-control" multiple>
-                            <!-- Populated dynamically -->
-                        </select>
+                    <div class="card filter-card">
+                        <h3>Segmentation</h3>
+                        <div class="form-group">
+                            <select id="segmentationFilter" class="form-control" multiple size="6"></select>
+                        </div>
+                    </div>
+
+                    <div class="card filter-card">
+                        <h3>Assigned To</h3>
+                        <div class="form-group">
+                            <select id="assignedToFilter" class="form-control" multiple size="6"></select>
+                        </div>
+                    </div>
+
+                    <div class="card filter-card">
+                        <h3>Actions</h3>
+                        <div class="action-buttons">
+                            <button id="clearFilters" class="btn btn--secondary btn--full-width">Clear Filters</button>
+                            <button id="exportData" class="btn btn--primary btn--full-width">Export Data</button>
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="filter-actions">
-                    <button id="clear-filters" class="btn btn--secondary">Clear Filters</button>
-                    <button id="export-csv" class="btn btn--primary">Export CSV</button>
+            <section class="results-section">
+                <div class="card">
+                    <div class="card__header">
+                        <div class="results-header">
+                            <h2>Account Results</h2>
+                            <div class="results-count"><span id="resultsCount">0 accounts found</span></div>
+                        </div>
+                        <div class="search-container">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search within results...">
+                        </div>
+                    </div>
+                    <div class="card__body">
+                        <div class="table-container">
+                            <table id="resultsTable" class="results-table">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="Company Name">Company Name <span class="sort-indicator"></span></th>
+                                        <th data-sort="Assigned To">Assigned To <span class="sort-indicator"></span></th>
+                                        <th data-sort="Account Type">Account Type <span class="sort-indicator"></span></th>
+                                        <th data-sort="Prospect Score">Prospect Score <span class="sort-indicator"></span></th>
+                                        <th data-sort="Account Notes">Account Notes <span class="sort-indicator"></span></th>
+                                        <th data-sort="Drop Notes">Drop Notes <span class="sort-indicator"></span></th>
+                                        <th data-sort="Website">Website <span class="sort-indicator"></span></th>
+                                        <th data-sort="LinkedIn URL">LinkedIn <span class="sort-indicator"></span></th>
+                                        <th data-sort="Revenue Estimate">Revenue <span class="sort-indicator"></span></th>
+                                        <th data-sort="Employees">Employees <span class="sort-indicator"></span></th>
+                                        <th data-sort="Head Office">Head Office <span class="sort-indicator"></span></th>
+                                        <th data-sort="Country">Country <span class="sort-indicator"></span></th>
+                                        <th data-sort="Segmentation">Segmentation <span class="sort-indicator"></span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Search Section -->
-            <div id="search-section" class="search-container hidden">
-                <input type="text" id="search-input" class="form-control search-input" placeholder="Search companies...">
-            </div>
-
-            <!-- Results Section -->
-            <div id="results-section" class="results-container hidden">
-                <div class="results-header">
-                    <h3 id="results-count">0 companies found</h3>
-                </div>
-                <div class="table-container">
-                    <table id="results-table" class="results-table">
-                        <thead>
-                            <tr>
-                                <th data-sort="company">Company Name</th>
-                                <th data-sort="assigned">Assigned To</th>
-                                <th data-sort="type">Account Type</th>
-                                <th data-sort="score">Prospect Score</th>
-                                <th data-sort="website">Website</th>
-                                <th data-sort="revenue">Revenue</th>
-                                <th data-sort="employees">Employees</th>
-                                <th data-sort="location">Location</th>
-                                <th data-sort="segmentation">Segmentation</th>
-                            </tr>
-                        </thead>
-                        <tbody id="results-tbody">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="loading" class="loading hidden">Loading...</div>
+            </section>
         </div>
 
-        <!-- Account Details Tab Content -->
-        <div id="tab-content-details" class="tab-content">
-            <div class="account-details-container">
-                <div class="company-selector">
-                    <label for="company-dropdown" class="form-label">Select Company</label>
-                    <select id="company-dropdown" class="form-control">
-                        <option value="">Choose a company...</option>
-                        <!-- Populated dynamically -->
-                    </select>
-                </div>
-
-                <div id="account-info" class="account-info hidden">
-                    <div class="account-cards">
-                        <div class="account-card">
-                            <h4>Salesforce ID</h4>
-                            <p id="salesforce-id" class="account-value">-</p>
-                        </div>
-                        
-                        <div class="account-card">
-                            <h4>Activity Score</h4>
-                            <p id="activity-score" class="account-value score">-</p>
-                        </div>
-                        
-                        <div class="account-card">
-                            <h4>Generation Score</h4>
-                            <p id="generation-score" class="account-value score">-</p>
-                        </div>
-                        
-                        <div class="account-card">
-                            <h4>Location</h4>
-                            <p id="location" class="account-value">-</p>
+        <!-- Account Details Tab -->
+        <div id="account-details-tab" class="tab-content">
+            <section class="account-details-section">
+                <div class="card">
+                    <div class="card__header">
+                        <div class="company-selector">
+                            <h3>Select Company</h3>
+                            <select id="companyDropdown" class="company-dropdown">
+                                <option value="">-- Select a company --</option>
+                            </select>
                         </div>
                     </div>
-
-                    <div class="notes-section">
-                        <div class="notes-card">
-                            <h4>Account Notes</h4>
-                            <div id="account-notes" class="notes-content">-</div>
-                        </div>
-                        
-                        <div class="notes-card">
-                            <h4>Drop Notes</h4>
-                            <div id="drop-notes" class="notes-content">-</div>
+                    <div class="card__body">
+                        <div id="accountDetailsContent">
+                            <div class="no-company-selected">
+                                <h3>No Company Selected</h3>
+                                <p>Please select a company from the dropdown above to view detailed account information.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
+        </div>
+
+        <div id="loadingIndicator" class="loading hidden">
+            <div class="loading-spinner"></div>
+            <p>Filtering results...</p>
         </div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
