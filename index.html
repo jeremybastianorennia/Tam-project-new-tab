@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZoomInfo Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+    <!-- Main Dashboard -->
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>ZoomInfo Dashboard</h1>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button id="tab-dashboard" class="tab-btn active" data-tab="dashboard">Account Filter Dashboard</button>
+            <button id="tab-details" class="tab-btn" data-tab="details">Account Details</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tab-content-dashboard" class="tab-content active">
+            <!-- File Upload Section -->
+            <div class="upload-section">
+                <label for="csv-file" class="upload-label">
+                    <span class="upload-text">Choose CSV file or drag and drop</span>
+                    <input type="file" id="csv-file" accept=".csv" class="upload-input">
+                </label>
+                <div id="file-info" class="file-info hidden"></div>
+            </div>
+
+            <!-- Filters Section -->
+            <div id="filters-section" class="filters-container hidden">
+                <div class="filters-grid">
+                    <!-- Revenue Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Revenue Range</label>
+                        <select id="revenue-filter" class="form-control" multiple>
+                            <option value="$1M - $10M">$1M - $10M</option>
+                            <option value="$10M - $50M">$10M - $50M</option>
+                            <option value="$50M - $100M">$50M - $100M</option>
+                            <option value="$100M - $500M">$100M - $500M</option>
+                            <option value="$500M - $1B">$500M - $1B</option>
+                            <option value="$1B+">$1B+</option>
+                        </select>
+                    </div>
+
+                    <!-- Employee Count Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Employee Count</label>
+                        <div class="employee-inputs">
+                            <input type="number" id="employee-min" class="form-control" placeholder="Min" min="0">
+                            <input type="number" id="employee-max" class="form-control" placeholder="Max" min="0">
+                        </div>
+                    </div>
+
+                    <!-- Segmentation Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Segmentation</label>
+                        <select id="segmentation-filter" class="form-control" multiple>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Assigned To Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Assigned To</label>
+                        <select id="assigned-filter" class="form-control" multiple>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button id="clear-filters" class="btn btn--secondary">Clear Filters</button>
+                    <button id="export-csv" class="btn btn--primary">Export CSV</button>
+                </div>
+            </div>
+
+            <!-- Search Section -->
+            <div id="search-section" class="search-container hidden">
+                <input type="text" id="search-input" class="form-control search-input" placeholder="Search companies...">
+            </div>
+
+            <!-- Results Section -->
+            <div id="results-section" class="results-container hidden">
+                <div class="results-header">
+                    <h3 id="results-count">0 companies found</h3>
+                </div>
+                <div class="table-container">
+                    <table id="results-table" class="results-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="company">Company Name</th>
+                                <th data-sort="assigned">Assigned To</th>
+                                <th data-sort="type">Account Type</th>
+                                <th data-sort="score">Prospect Score</th>
+                                <th data-sort="website">Website</th>
+                                <th data-sort="revenue">Revenue</th>
+                                <th data-sort="employees">Employees</th>
+                                <th data-sort="location">Location</th>
+                                <th data-sort="segmentation">Segmentation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-tbody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="loading" class="loading hidden">Loading...</div>
+        </div>
+
+        <!-- Account Details Tab Content -->
+        <div id="tab-content-details" class="tab-content">
+            <div class="account-details-container">
+                <div class="company-selector">
+                    <label for="company-dropdown" class="form-label">Select Company</label>
+                    <select id="company-dropdown" class="form-control">
+                        <option value="">Choose a company...</option>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div id="account-info" class="account-info hidden">
+                    <div class="account-cards">
+                        <div class="account-card">
+                            <h4>Salesforce ID</h4>
+                            <p id="salesforce-id" class="account-value">-</p>
+                        </div>
+                        
+                        <div class="account-card">
+                            <h4>Activity Score</h4>
+                            <p id="activity-score" class="account-value score">-</p>
+                        </div>
+                        
+                        <div class="account-card">
+                            <h4>Generation Score</h4>
+                            <p id="generation-score" class="account-value score">-</p>
+                        </div>
+                        
+                        <div class="account-card">
+                            <h4>Location</h4>
+                            <p id="location" class="account-value">-</p>
+                        </div>
+                    </div>
+
+                    <div class="notes-section">
+                        <div class="notes-card">
+                            <h4>Account Notes</h4>
+                            <div id="account-notes" class="notes-content">-</div>
+                        </div>
+                        
+                        <div class="notes-card">
+                            <h4>Drop Notes</h4>
+                            <div id="drop-notes" class="notes-content">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
