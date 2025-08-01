@@ -31,6 +31,44 @@ class ZoomInfoDashboard {
     init() {
         console.log('Initializing ZoomInfo Dashboard...');
         this.setupEventListeners();
+        // NEW: Auto-load data.csv instead of file upload
+        this.autoLoadCSV();
+    }
+
+    autoLoadCSV() {
+        this.showLoading(true);
+        Papa.parse('data.csv', {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+                console.log('CSV parsed successfully, rows:', results.data.length);
+                this.csvData = results.data;
+                this.filteredData = [...this.csvData];
+                this.processData();
+                this.showLoading(false);
+
+                const fileInfo = document.getElementById('file-info');
+                if (fileInfo) {
+                    fileInfo.innerHTML = `✓ Loaded ${this.csvData.length} records from data.csv`;
+                    fileInfo.classList.remove('hidden');
+                }
+
+                // Show sections
+                const sections = ['filters-section', 'search-section', 'results-section'];
+                sections.forEach(sectionId => {
+                    const section = document.getElementById(sectionId);
+                    if (section) section.classList.remove('hidden');
+                });
+
+                this.renderResults();
+            },
+            error: (error) => {
+                console.error('Error parsing CSV:', error);
+                this.showLoading(false);
+                alert('Error parsing data.csv. Please check the file presence and format.');
+            }
+        });
     }
 
     setupEventListeners() {
@@ -38,25 +76,15 @@ class ZoomInfoDashboard {
 
         // Tab navigation
         const tabButtons = document.querySelectorAll('.tab-btn');
-        console.log(`Found ${tabButtons.length} tab buttons`);
-        tabButtons.forEach((btn, index) => {
+        tabButtons.forEach((btn) => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const tabName = btn.getAttribute('data-tab');
-                console.log(`Tab clicked: ${tabName}`);
                 if (tabName) {
                     this.switchTab(tabName);
                 }
             });
         });
-
-        // File upload
-        const csvFile = document.getElementById('csv-file');
-        if (csvFile) {
-            csvFile.addEventListener('change', (e) => {
-                this.handleFileUpload(e.target.files[0]);
-            });
-        }
 
         // Filters
         const revenueFilter = document.getElementById('revenue-filter');
@@ -139,20 +167,15 @@ class ZoomInfoDashboard {
     }
 
     switchTab(tabName) {
-        console.log(`Switching to tab: ${tabName}`);
-        
         // Update tab buttons
         const tabButtons = document.querySelectorAll('.tab-btn');
         tabButtons.forEach(btn => {
             btn.classList.remove('active');
         });
-        
+
         const activeTab = document.getElementById(`tab-${tabName}`);
         if (activeTab) {
             activeTab.classList.add('active');
-            console.log(`Tab ${tabName} set as active`);
-        } else {
-            console.error(`Tab button tab-${tabName} not found`);
         }
 
         // Update tab content
@@ -160,57 +183,14 @@ class ZoomInfoDashboard {
         tabContents.forEach(content => {
             content.classList.remove('active');
         });
-        
+
         const activeContent = document.getElementById(`tab-content-${tabName}`);
         if (activeContent) {
             activeContent.classList.add('active');
-            console.log(`Tab content ${tabName} set as active`);
-        } else {
-            console.error(`Tab content tab-content-${tabName} not found`);
         }
     }
 
-    handleFileUpload(file) {
-        if (!file) return;
-
-        console.log('Handling file upload:', file.name);
-        this.showLoading(true);
-        
-        Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            complete: (results) => {
-                console.log('CSV parsed successfully, rows:', results.data.length);
-                this.csvData = results.data;
-                this.filteredData = [...this.csvData];
-                this.processData();
-                this.showLoading(false);
-                
-                const fileInfo = document.getElementById('file-info');
-                if (fileInfo) {
-                    fileInfo.innerHTML = `✓ Loaded ${this.csvData.length} records from ${file.name}`;
-                    fileInfo.classList.remove('hidden');
-                }
-                
-                // Show sections
-                const sections = ['filters-section', 'search-section', 'results-section'];
-                sections.forEach(sectionId => {
-                    const section = document.getElementById(sectionId);
-                    if (section) section.classList.remove('hidden');
-                });
-                
-                this.renderResults();
-            },
-            error: (error) => {
-                console.error('Error parsing CSV:', error);
-                this.showLoading(false);
-                alert('Error parsing CSV file. Please check the file format.');
-            }
-        });
-    }
-
     processData() {
-        console.log('Processing data...');
         this.populateFilters();
         this.populateCompanyDropdown();
     }
@@ -246,19 +226,15 @@ class ZoomInfoDashboard {
     populateCompanyDropdown() {
         const companies = [...new Set(this.csvData.map(row => row['Company Name']).filter(Boolean))];
         const companySelect = document.getElementById('company-dropdown');
-        
+
         if (companySelect) {
-            // Clear existing options except the first one
             companySelect.innerHTML = '<option value="">Choose a company...</option>';
-            
             companies.sort().forEach(company => {
                 const option = document.createElement('option');
                 option.value = company;
                 option.textContent = company;
                 companySelect.appendChild(option);
             });
-            
-            console.log(`Populated company dropdown with ${companies.length} companies`);
         }
     }
 
@@ -268,10 +244,9 @@ class ZoomInfoDashboard {
         // Revenue filter
         const revenueFilter = document.getElementById('revenue-filter');
         if (revenueFilter) {
-            const revenueValues = Array.from(revenueFilter.selectedOptions)
-                .map(option => option.value);
+            const revenueValues = Array.from(revenueFilter.selectedOptions).map(option => option.value);
             if (revenueValues.length > 0) {
-                filtered = filtered.filter(row => 
+                filtered = filtered.filter(row =>
                     revenueValues.includes(row['Revenue Estimate'])
                 );
             }
@@ -329,7 +304,7 @@ class ZoomInfoDashboard {
                 value && value.toString().toLowerCase().includes(searchLower)
             )
         );
-        
+
         this.renderResults();
     }
 
@@ -340,14 +315,14 @@ class ZoomInfoDashboard {
         const segmentationFilter = document.getElementById('segmentation-filter');
         const assignedFilter = document.getElementById('assigned-filter');
         const searchInput = document.getElementById('search-input');
-        
+
         if (revenueFilter) revenueFilter.selectedIndex = -1;
         if (employeeMin) employeeMin.value = '';
         if (employeeMax) employeeMax.value = '';
         if (segmentationFilter) segmentationFilter.selectedIndex = -1;
         if (assignedFilter) assignedFilter.selectedIndex = -1;
         if (searchInput) searchInput.value = '';
-        
+
         this.filteredData = [...this.csvData];
         this.renderResults();
     }
@@ -366,7 +341,7 @@ class ZoomInfoDashboard {
         };
 
         const actualColumn = columnMap[column];
-        
+
         if (this.currentSort.column === actualColumn) {
             this.currentSort.direction = this.currentSort.direction === 'asc' ? 'desc' : 'asc';
         } else {
@@ -408,14 +383,14 @@ class ZoomInfoDashboard {
     renderResults() {
         const tbody = document.getElementById('results-tbody');
         const countElement = document.getElementById('results-count');
-        
+
         if (countElement) {
             countElement.textContent = `${this.filteredData.length} companies found`;
         }
-        
+
         if (tbody) {
             tbody.innerHTML = '';
-            
+
             this.filteredData.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -435,17 +410,17 @@ class ZoomInfoDashboard {
     }
 
     showAccountDetails(companyName) {
-        console.log('Showing account details for:', companyName);
         const accountInfo = document.getElementById('account-info');
-        
+
         if (!companyName || !accountInfo) {
             if (accountInfo) accountInfo.classList.add('hidden');
             return;
         }
 
+        // In data, some fields may have alternate or duplicate names
+        // For Account Notes and Drop Notes, prefer first non-empty or fallback to alternate header
         const company = this.csvData.find(row => row['Company Name'] === companyName);
         if (!company) {
-            console.log('Company not found in data');
             accountInfo.classList.add('hidden');
             return;
         }
@@ -459,23 +434,31 @@ class ZoomInfoDashboard {
         const dropNotes = document.getElementById('drop-notes');
 
         if (salesforceId) salesforceId.textContent = company['SalesforceID'] || '-';
-        
+
         if (activityScore) {
             const activity = company['Activity'] ? `${company['Activity']}/10` : '-';
             activityScore.textContent = activity;
         }
-        
+
         if (generationScore) {
             const generation = company['Generation'] ? `${company['Generation']}/10` : '-';
             generationScore.textContent = generation;
         }
-        
-        if (location) location.textContent = company['Location'] || '-';
-        if (accountNotes) accountNotes.textContent = company['Account Notes'] || '-';
-        if (dropNotes) dropNotes.textContent = company['Drop Notes'] || '-';
+
+        // Try Location first, fall back to Head Office if needed
+        if (location) location.textContent = company['Location'] || company['Head Office'] || '-';
+
+        // Show first non-empty Account Notes (there are two in the data)
+        let accountNotesValue = company['Account Notes'] || company['Account Notes '] || (company['Account Notes'] === "" ? company['Account Notes '] : "");
+        if (!accountNotesValue || accountNotesValue === "Placeholder") accountNotesValue = "-";
+        if (accountNotes) accountNotes.textContent = accountNotesValue;
+
+        // Similarly for Drop Notes/DropNotes
+        let dropNotesValue = company['Drop Notes'] || company['DropNotes'] || (company['Drop Notes'] === "" ? company['DropNotes'] : "");
+        if (!dropNotesValue || dropNotesValue === "Placeholder") dropNotesValue = "-";
+        if (dropNotes) dropNotes.textContent = dropNotesValue;
 
         accountInfo.classList.remove('hidden');
-        console.log('Account details updated and shown');
     }
 
     exportCSV() {
@@ -487,7 +470,7 @@ class ZoomInfoDashboard {
         const csv = Papa.unparse(this.filteredData);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
-        
+
         if (link.download !== undefined) {
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
