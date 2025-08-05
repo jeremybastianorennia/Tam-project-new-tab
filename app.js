@@ -11,48 +11,69 @@ let revenueFilter, minEmployeesInput, maxEmployeesInput, segmentationFilter, ass
 const correctPassword = "flames";
 
 function checkPassword() {
+    console.log("checkPassword function called");
     const enteredPassword = prompt("This dashboard is protected. Please enter the password:");
+    console.log("Password entered:", enteredPassword ? "Yes" : "No");
+    
     if (enteredPassword === correctPassword) {
+        console.log("Password correct, showing dashboard");
         document.body.style.display = 'block';
         return true;
     } else if (enteredPassword !== null) {
         alert("Incorrect password. Please try again.");
         return checkPassword();
     } else {
+        console.log("Password prompt cancelled");
         document.body.style.display = 'none';
         return false;
     }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    console.log("DOM Content Loaded");
+    
     // Hide body initially
     document.body.style.display = 'none';
+    console.log("Body hidden");
+    
+    // Check if PapaParse is available
+    if (typeof Papa === 'undefined') {
+        console.error("PapaParse library not found! Make sure to include it in your HTML.");
+        alert("Error: PapaParse library not loaded. Please check your HTML file includes the PapaParse script.");
+        return;
+    }
     
     // Check password first
     if (!checkPassword()) {
+        console.log("Password check failed, stopping initialization");
         return;
     }
 
+    console.log("Starting CSV load...");
+    
     // Load CSV data
     Papa.parse('data.csv', {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-            console.log('CSV loaded:', results.data.length, 'records');
+            console.log('CSV loaded successfully:', results.data.length, 'records');
+            console.log('Sample data:', results.data[0]);
             zoomInfoData = results.data;
             initializeDashboard();
         },
         error: function(err) {
             console.error('CSV loading error:', err);
-            alert('Failed to load data: ' + err);
+            alert('Failed to load data: ' + err.message + '\n\nMake sure data.csv exists in the same directory as your HTML file.');
         }
     });
 });
 
 function initializeDashboard() {
+    console.log("Initializing dashboard...");
+    
     try {
-        // Get all dashboard elements
+        // Get all dashboard elements with existence checks
         revenueFilter = document.getElementById('revenueFilter');
         minEmployeesInput = document.getElementById('minEmployees');
         maxEmployeesInput = document.getElementById('maxEmployees');
@@ -64,19 +85,31 @@ function initializeDashboard() {
         clearFiltersBtn = document.getElementById('clearFilters');
         exportDataBtn = document.getElementById('exportData');
         loadingIndicator = document.getElementById('loadingIndicator');
-
-        // Get account details elements
         companyDropdown = document.getElementById('companyDropdown');
         accountDetailsContent = document.getElementById('accountDetailsContent');
 
+        // Log which elements are missing
+        const elements = {
+            revenueFilter, minEmployeesInput, maxEmployeesInput, segmentationFilter,
+            assignedToFilter, searchInput, resultsBody, resultsCount, clearFiltersBtn,
+            exportDataBtn, loadingIndicator, companyDropdown, accountDetailsContent
+        };
+        
+        Object.entries(elements).forEach(([name, element]) => {
+            if (!element) {
+                console.warn(`Element missing: ${name}`);
+            }
+        });
+
         // Check if critical elements exist
-        if (!revenueFilter || !resultsBody || !companyDropdown) {
-            console.error('Critical elements missing from DOM');
-            alert('Error: Some page elements are missing. Please refresh the page.');
+        if (!resultsBody) {
+            console.error('Critical element missing: resultsBody');
+            alert('Error: Results table body element (#resultsBody) not found. Please check your HTML structure.');
             return;
         }
 
         // Initialize data and UI
+        console.log("Populating filters...");
         populateSegmentationFilter();
         populateAssignedToFilter();
         populateCompanyDropdown();
@@ -92,8 +125,11 @@ function initializeDashboard() {
     }
 }
 
+// Rest of your functions remain the same...
 function attachEventListeners() {
     try {
+        console.log("Attaching event listeners...");
+        
         // Tab event listeners - FIXED
         document.querySelectorAll('.tab-button').forEach(button => {
             button.addEventListener('click', function() {
@@ -458,6 +494,8 @@ function populateSegmentationFilter() {
             option.textContent = seg;
             segmentationFilter.appendChild(option);
         });
+        
+        console.log('Segmentation filter populated with', uniqueSegments.length, 'options');
     } catch (error) {
         console.error('Error populating segmentation filter:', error);
     }
@@ -482,6 +520,8 @@ function populateAssignedToFilter() {
             option.textContent = name;
             assignedToFilter.appendChild(option);
         });
+        
+        console.log('Assigned To filter populated with', uniqueAssigned.length, 'options');
     } catch (error) {
         console.error('Error populating assigned to filter:', error);
     }
