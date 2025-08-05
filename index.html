@@ -761,14 +761,17 @@
         const correctPassword = "flames";
         
         function checkPassword() {
+            console.log("Password check initiated");
             const enteredPassword = prompt("This dashboard is protected. Please enter the password:");
             if (enteredPassword === correctPassword) {
+                console.log("Password correct, showing dashboard");
                 document.body.style.display = 'block';
                 return true;
             } else if (enteredPassword !== null) {
                 alert("Incorrect password. Please try again.");
                 return checkPassword();
             } else {
+                console.log("Password prompt cancelled");
                 document.body.style.display = 'none';
                 return false;
             }
@@ -776,6 +779,7 @@
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded, starting initialization");
             document.body.style.display = 'none';
             if (checkPassword()) {
                 initializeApp();
@@ -783,6 +787,7 @@
         });
 
         function initializeApp() {
+            console.log("Initializing app, loading CSV...");
             // Try to load CSV
             showLoading();
             Papa.parse('data.csv', {
@@ -790,6 +795,7 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
+                    console.log("CSV parse complete");
                     if (results.errors.length > 0) {
                         console.error('CSV parsing errors:', results.errors);
                         showErrorMessage('Error parsing CSV file: ' + results.errors[0].message);
@@ -798,6 +804,7 @@
                     }
                     
                     if (results.data.length === 0) {
+                        console.error('CSV appears empty');
                         showErrorMessage('CSV file appears to be empty or could not be loaded.');
                         hideLoading();
                         return;
@@ -805,6 +812,7 @@
 
                     zoomInfoData = results.data;
                     console.log('CSV loaded successfully:', zoomInfoData.length, 'records');
+                    console.log('Sample record:', zoomInfoData[0]);
                     initializeDashboard();
                     hideLoading();
                 },
@@ -826,6 +834,7 @@
 
         function initializeDashboard() {
             try {
+                console.log("Initializing dashboard components");
                 populateSegmentationFilter();
                 populateAssignedToFilter();
                 populateCompanyDropdown();
@@ -842,6 +851,7 @@
         // Tab switching functionality
         function switchTab(tabName, buttonElement) {
             try {
+                console.log('Switching to tab:', tabName);
                 // Hide all tab contents
                 document.querySelectorAll('.tab-content').forEach(tab => {
                     tab.classList.remove('active');
@@ -870,6 +880,7 @@
         // Event listeners
         function attachEventListeners() {
             try {
+                console.log("Attaching event listeners");
                 // Tab buttons
                 document.querySelectorAll('.tab-button').forEach(button => {
                     button.addEventListener('click', function() {
@@ -1204,8 +1215,8 @@
         }
 
         function escapeRegex(string) {
-            return String(string).replace(/[.*+?^${}()|[\]\\]/g, '\\        // Filter functionality
-        function');
+            return String(string || '').replace(/[.*+?^${}()|[\]\\]/g, '\\                if (minEmployees) minEmployees.addEventListener('input', debounce(handleFilterChange, 300));
+                if (maxEmployees) maxEmployees.addEventListener('input', debounce');
         }
 
         function showLoading() {
@@ -1247,6 +1258,7 @@
                         option.textContent = seg;
                         segmentationFilter.appendChild(option);
                     });
+                    console.log('Segmentation filter populated with', uniqueSegments.length, 'options');
                 }
             } catch (error) {
                 console.error('Error populating segmentation filter:', error);
@@ -1272,6 +1284,7 @@
                         option.textContent = name;
                         assignedToFilter.appendChild(option);
                     });
+                    console.log('Assigned To filter populated with', uniqueAssigned.length, 'options');
                 }
             } catch (error) {
                 console.error('Error populating assigned to filter:', error);
@@ -1297,6 +1310,7 @@
                         option.textContent = company;
                         companyDropdown.appendChild(option);
                     });
+                    console.log('Company dropdown populated with', uniqueCompanies.length, 'companies');
                 }
             } catch (error) {
                 console.error('Error populating company dropdown:', error);
@@ -1312,6 +1326,8 @@
                 if (!companyDropdown || !accountDetailsContent) return;
                 
                 const selectedCompany = companyDropdown.value;
+                console.log('Company selected:', selectedCompany);
+                
                 if (!selectedCompany) {
                     accountDetailsContent.innerHTML = `
                         <div class="no-company-selected">
